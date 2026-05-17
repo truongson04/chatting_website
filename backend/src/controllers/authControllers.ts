@@ -41,9 +41,38 @@ export const signup = async (req: Request, res: Response) => {
       .json({ message: "Something went wrong in our server !" });
   }
 };
-export const login = (req: Request, res: Response) => {
-  res.send("Login");
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "User is not exit" });
+    }
+    const isCorrectPassword: boolean = await bcrypt.compare(
+      password,
+      user.password,
+    );
+    if (!isCorrectPassword) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+    generateToken(user.id, res);
+    return res.status(200).json({
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 export const logout = (req: Request, res: Response) => {
-  res.send("logout");
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    return res.status(200).json({ message: "Logout successfully !" });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
