@@ -1,6 +1,45 @@
 import { Request, Response } from "express";
-export const signup = (req: Request, res: Response) => {
-  res.send("Hello");
+import User from "../models/userModel.js";
+import bcrypt from "bcryptjs";
+import { generateToken } from "../lib/util.js";
+
+export const signup = async (req: Request, res: Response) => {
+  const { fullName, email, password } = req.body;
+  try {
+    if (!fullName || !email || password) {
+      return res.status(400).json({ message: "All the fields are required" });
+    }
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password needs to be at least 6 characters" });
+    }
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "User already exit" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = await User.create({
+      fullName,
+      email,
+      password: hashedPassword,
+    });
+    if (newUser) {
+      generateToken(newUser.id, res);
+      return res.status(201).json({
+        id: newUser.id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePic: newUser.profilePic,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Something went wrong in our server !" });
+  }
 };
 export const login = (req: Request, res: Response) => {
   res.send("Login");
