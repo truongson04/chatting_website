@@ -6,7 +6,7 @@ import { generateToken } from "../lib/util.js";
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password } = req.body;
   try {
-    if (!fullName || !email || password) {
+    if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All the fields are required" });
     }
     if (password.length < 6) {
