@@ -76,6 +76,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     try {
       const res = await clientApi.post("/auth/logout");
       set({ authUser: null });
+      localStorage.removeItem("main-theme");
       toast.success("Logout successfully");
     } catch (error) {
       if (axios.isAxiosError(error)) {
