@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import axios from "axios";
 import type { UserLogin } from "../components/LoginPage";
 import type { UpdateProfile } from "../components/ProfilePage";
+import type { Users } from "./useChat";
 
 interface AuthState {
   authUser: any;
@@ -17,6 +18,7 @@ interface AuthState {
   signUp: (formData: User) => void;
   logout: () => void;
   updateProfile: (updateObject: UpdateProfile) => void;
+  online: string[];
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -104,4 +106,5 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ isUpdatingProfile: false });
     }
   },
+  online: [],
 }));
