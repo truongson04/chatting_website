@@ -4,6 +4,7 @@ import User from "../models/userModel.js";
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const { profilePic } = req.body;
+    console.log(req.body);
     const userId = req.user?._id;
     if (!profilePic) {
       return res.status(400).json({ message: "Profile picture is required" });

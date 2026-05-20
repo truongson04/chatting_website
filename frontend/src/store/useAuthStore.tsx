@@ -4,6 +4,8 @@ import type { User } from "../components/SignUpPage";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import type { UserLogin } from "../components/LoginPage";
+import type { UpdateProfile } from "../components/ProfilePage";
+
 interface AuthState {
   authUser: any;
   isCheckingAuth: boolean;
@@ -14,6 +16,7 @@ interface AuthState {
   checkAuth: () => void;
   signUp: (formData: User) => void;
   logout: () => void;
+  updateProfile: (updateObject: UpdateProfile) => void;
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -81,6 +84,23 @@ export const useAuthStore = create<AuthState>()((set) => ({
         toast.error(error.message);
       }
       console.log(error);
+    }
+  },
+  updateProfile: async (updateObject: UpdateProfile) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await clientApi.patch("/user/update-profile", updateObject);
+      set({ authUser: res.data });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      console.log(error);
+    } finally {
+      set({ isUpdatingProfile: false });
     }
   },
 }));
