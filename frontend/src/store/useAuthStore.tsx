@@ -3,14 +3,22 @@ import clientApi from "../lib/axios";
 import type { User } from "../components/SignUpPage";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import type { UserLogin } from "../components/LoginPage";
+import type { UpdateProfile } from "../components/ProfilePage";
+import type { Users } from "./useChat";
+
 interface AuthState {
   authUser: any;
   isCheckingAuth: boolean;
   isSigningUp: boolean;
   isLoggingIn: boolean;
   isUpdatingProfile: boolean;
+  login: (formData: UserLogin) => void;
   checkAuth: () => void;
   signUp: (formData: User) => void;
+  logout: () => void;
+  updateProfile: (updateObject: UpdateProfile) => void;
+  online: string[];
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
@@ -19,6 +27,23 @@ export const useAuthStore = create<AuthState>()((set) => ({
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
+  login: async (formData: UserLogin) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await clientApi.post("/auth/login", formData);
+      set({ authUser: res.data });
+      toast.success("Login successfully");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      console.log(error);
+    } finally {
+      set({ isLoggingIn: false });
+    }
+  },
   checkAuth: async () => {
     try {
       const res = await clientApi.get("/user/check");
@@ -49,4 +74,37 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ isSigningUp: false });
     }
   },
+  logout: async () => {
+    try {
+      const res = await clientApi.post("/auth/logout");
+      set({ authUser: null });
+      localStorage.removeItem("main-theme");
+      toast.success("Logout successfully");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      console.log(error);
+    }
+  },
+  updateProfile: async (updateObject: UpdateProfile) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await clientApi.patch("/user/update-profile", updateObject);
+      set({ authUser: res.data });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      }
+      console.log(error);
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+  online: [],
 }));

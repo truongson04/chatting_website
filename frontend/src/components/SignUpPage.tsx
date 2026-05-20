@@ -98,7 +98,7 @@ export default function SignUpPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="size-5 " />
+                  <Mail className="size-5 text-cyan-600" />
                 </div>
                 <input
                   type="email"
