@@ -15,10 +15,13 @@ export default function App() {
   // hàm để lưu thông tin người dùng vào store mỗi khi chuyển route
   const { authUser, checkAuth, isCheckingAuth, online } = useAuthStore();
   const { theme } = useThemeStore();
-  console.log(online);
+
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -28,7 +31,10 @@ export default function App() {
   }
   return (
     <>
-      <div data-theme={theme}>
+      <div
+        data-theme={theme}
+        className="min-h-screen bg-base-100 text-base-content"
+      >
         <NavBar />
         <Routes>
           <Route

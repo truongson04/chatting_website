@@ -98,7 +98,12 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
       return;
     }
     const socket = useAuthStore.getState().socket;
+
     socket.on("newMessage", (newMessage) => {
+      // kiểm tra nếu tin nhắn đến mà có id người gửi không phải là id của người đang chọn trên màn hình thì return luôn
+      if (newMessage.senderId! == selectedUser._id) {
+        return;
+      }
       set({ messages: [...get().messages, newMessage] });
     });
   },

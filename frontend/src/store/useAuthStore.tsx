@@ -12,6 +12,7 @@ export interface UserCurrent {
   fullName: string;
   email: string;
   profilePic: string;
+  createdAt?: Date;
 }
 interface AuthState {
   authUser: UserCurrent | null;

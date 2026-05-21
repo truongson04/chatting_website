@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChat";
 import SideBarSkeleton from "./skeleton/SideBarSkeleton";
 import { Users } from "lucide-react";
@@ -8,12 +8,19 @@ export default function SideBar() {
   const { getUsers, users, selectedUser, setSelectedUser, isUserLoading } =
     useChatStore();
   const { online } = useAuthStore();
+  const [showOnline, setShowOnline] = useState<boolean>(false);
+
   useEffect(() => {
     getUsers();
   }, [getUsers]);
   if (isUserLoading) {
     return <SideBarSkeleton />;
   }
+  const onlineUsers = showOnline
+    ? users.filter((user) => {
+        return online.includes(user._id);
+      })
+    : users;
   return (
     <>
       <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
@@ -22,8 +29,24 @@ export default function SideBar() {
             <Users className="size-6" />
             <span className="font-medium hidden lg:block">Contact list </span>
           </div>
+          <div className="mt-3 hidden lg:flex items-center gap-2">
+            <label className="cursor-pointer flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showOnline}
+                onChange={(e) => {
+                  setShowOnline(e.target.checked);
+                }}
+                className="checkbox checkbox-sm"
+              />
+              <span className="text-sm">Show who is online</span>
+              <span className="text-xs text-zinc-500">
+                {online.length - 1} online
+              </span>
+            </label>
+          </div>
           <div className="overflow-y-auto w-full py-3">
-            {users.map((user) => (
+            {onlineUsers.map((user) => (
               <button
                 key={user._id}
                 onClick={() => setSelectedUser(user)}
@@ -35,9 +58,12 @@ export default function SideBar() {
               >
                 <div className="relative mx-auto lg:mx-0">
                   <img
-                    src={user.profilePic || "../../public/Default_avt.png"}
+                    src={user.profilePic || "/Default_avt.png"}
                     alt={user.fullName}
                     className="size-12 object-cover rounded-full"
+                    onError={(e) => {
+                      e.currentTarget.src = "/Default_avt.png";
+                    }}
                   />
                   {online.includes(user._id) && (
                     <span
@@ -56,6 +82,11 @@ export default function SideBar() {
                 </div>
               </button>
             ))}
+            {onlineUsers.length == 0 && (
+              <div className="text-center text-zinc-500 py-4">
+                No online user
+              </div>
+            )}
           </div>
         </div>
       </aside>
