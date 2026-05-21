@@ -29,6 +29,7 @@ interface ChatStore {
   sendMessage: (message: Message) => void;
   subscribeToMessages: () => void;
   unsubscribeFromMessages: () => void;
+  
 }
 
 export const useChatStore = create<ChatStore>()((set, get) => ({

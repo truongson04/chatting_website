@@ -5,8 +5,6 @@ import { useChatStore } from "../store/useChat";
 export default function ChatHeader() {
   const { selectedUser, setSelectedUser } = useChatStore();
   const { online, authUser } = useAuthStore();
-  console.log(selectedUser._id);
-  console.log(authUser._id);
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
@@ -15,11 +13,8 @@ export default function ChatHeader() {
           <div className="avatar">
             <div className="size-10 rounded-full relative">
               <img
-                src={selectedUser.profilePic || "/Default_avt.png"}
+                src={selectedUser.profilePic || "../../public/Default_avt.png"}
                 alt={selectedUser.fullName}
-                onError={(e) => {
-                  e.currentTarget.src = "/Default_avt.png";
-                }}
               />
             </div>
           </div>
