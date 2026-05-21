@@ -29,6 +29,7 @@ export default function ChatContainer() {
       unsubscribeFromMessages();
     };
   }, [selectedUser, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  // auto scroll tin nhắn khi mount
   useEffect(() => {
     if (messageContainer.current && messages) {
       messageContainer.current.scrollIntoView({ behavior: "smooth" });

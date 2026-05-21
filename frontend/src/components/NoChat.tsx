@@ -12,7 +12,7 @@ export default function NoChat() {
                 className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center
              justify-center animate-bounce"
               >
-                <MessageSquare className="w-8 h-8 text-primary " />
+                <img src="/Hanu_logo.jpg" className="w-full object-cover" />
               </div>
             </div>
           </div>
