@@ -5,6 +5,10 @@ import cloudinary from "../lib/cloudinary.js";
 import { getReceiveSocketId, io } from "../lib/socket.io.js";
 export const getUsersForSideBar = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const currentUserId = req.user._id;
     const filteredUsers = await User.find({
       _id: { $ne: currentUserId },
@@ -17,6 +21,10 @@ export const getUsersForSideBar = async (req: Request, res: Response) => {
 };
 export const getMessages = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const userToChatId = req.params.id;
     const currentUserId = req.user._id;
     const messages = await Message.find({
@@ -33,6 +41,10 @@ export const getMessages = async (req: Request, res: Response) => {
 };
 export const sendMessage = async (req: Request, res: Response) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const { text, image } = req.body;
     const receiveId = req.params.id;
     const senderId = req.user._id;
@@ -42,19 +54,20 @@ export const sendMessage = async (req: Request, res: Response) => {
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
-    // socket io part
+
     const newMessage = new Message({
       senderId,
       receiveId,
       text,
       image: imageUrl,
     });
-    await newMessage.save();
+    // socket io part
     const receiveSocketId = getReceiveSocketId(receiveId as string);
     if (receiveSocketId) {
-      io.to(receiveSocketId).emit("newMessage", newMessage);
+      io.to(receiveSocketId).emit("newMessage", newMessage); // thêm to vào chỉ gửi cho máy socket có id đấy
     }
-    return res.status(200).json(newMessage);
+    await newMessage.save();
+    return res.status(200).json({ newMessage });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
