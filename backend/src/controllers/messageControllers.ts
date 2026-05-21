@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/userModel.js";
 import Message from "../models/messageModel.js";
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiveSocketId, io } from "../lib/socket.io.js";
 export const getUsersForSideBar = async (req: Request, res: Response) => {
   try {
     const currentUserId = req.user._id;
@@ -49,7 +50,11 @@ export const sendMessage = async (req: Request, res: Response) => {
       image: imageUrl,
     });
     await newMessage.save();
-    return res.status(200).json({ newMessage });
+    const receiveSocketId = getReceiveSocketId(receiveId as string);
+    if (receiveSocketId) {
+      io.to(receiveSocketId).emit("newMessage", newMessage);
+    }
+    return res.status(200).json(newMessage);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });

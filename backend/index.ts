@@ -1,4 +1,3 @@
-import { Express, Request, Response } from "express";
 import express from "express";
 import "dotenv/config";
 import cookieParser from "cookie-parser";
@@ -6,7 +5,8 @@ import cors from "cors";
 
 import routes from "./src/routes/index.js";
 import { connectDb } from "./src/lib/db.js";
-const app: Express = express();
+import { app, server } from "./src/lib/socket.io.js";
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -22,6 +22,6 @@ await connectDb();
 routes(app);
 const port = process.env.PORT;
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(` The server is running at http://localhost:${port}`);
 });

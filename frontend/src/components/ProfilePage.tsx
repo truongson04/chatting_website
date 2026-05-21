@@ -43,12 +43,15 @@ export default function ProfilePage() {
               <div className="relative">
                 <img
                   src={
-                    selectedImage ||
-                    authUser.profilePic ||
-                    "../../public/Default_avt.png"
+                    (selectedImage as string) ||
+                    (authUser.profilePic as string) ||
+                    "/Default_avt.png"
                   }
                   alt="Profile"
                   className="size-32 rounded-full object-cover border-4"
+                  onError={(e) => {
+                    e.currentTarget.src = "/Default_avt.png";
+                  }}
                 />
                 <label
                   htmlFor="avatar-upload"
@@ -97,21 +100,6 @@ export default function ProfilePage() {
                     <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
                       {authUser.email}
                     </p>
-                  </div>
-                </div>
-                <div className="mt-6 bg-base-300 rounded-xl p-2">
-                  <h2 className="text-lg font-medium mb-4 ">
-                    Account Information
-                  </h2>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between py-2 border-b border-zinc-700">
-                      <span>Join since </span>
-                      <span>{authUser.createdAt?.split("T")[0]}</span>
-                    </div>
-                    <div className="flex items-center justify-between py-2">
-                      <span>Account Status</span>
-                      <span className="text-green-500">Active</span>
-                    </div>
                   </div>
                 </div>
               </div>

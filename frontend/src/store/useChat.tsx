@@ -2,6 +2,7 @@ import { create } from "zustand";
 import clientApi from "../lib/axios";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { useAuthStore, type UserCurrent } from "./useAuthStore";
 export interface Users {
   _id: string;
   fullName: string;
@@ -14,10 +15,11 @@ export interface Message {
   receiveId: string;
   text: string;
   image: string;
+  createdAt?: string | Date;
 }
 interface ChatStore {
   messages: Message[];
-  selectedUser: any;
+  selectedUser: UserCurrent | null;
   users: Users[];
   isUserLoading: boolean;
   isMessageLoading: boolean;
@@ -25,6 +27,8 @@ interface ChatStore {
   getMessages: (userId: string) => void;
   setSelectedUser: (selectedUser: any) => void;
   sendMessage: (message: Message) => void;
+  subscribeToMessages: () => void;
+  unsubscribeFromMessages: () => void;
 }
 
 export const useChatStore = create<ChatStore>()((set, get) => ({
@@ -72,11 +76,13 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
   sendMessage: async (message: Message) => {
     const { selectedUser, messages } = get();
     try {
-      const res = await clientApi.post(
-        `/message/send/${selectedUser._id}`,
-        message,
-      );
-      set({ messages: [...messages, res.data] });
+      if (selectedUser) {
+        const res = await clientApi.post(
+          `/message/send/${selectedUser._id}`,
+          message,
+        );
+        set({ messages: [...messages, res.data] });
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -85,5 +91,24 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
       }
       console.log(error);
     }
+  },
+  subscribeToMessages: () => {
+    const { selectedUser } = get();
+    if (!selectedUser) {
+      return;
+    }
+    const socket = useAuthStore.getState().socket;
+
+    socket.on("newMessage", (newMessage) => {
+      // kiểm tra nếu tin nhắn đến mà có id người gửi không phải là id của người đang chọn trên màn hình thì return luôn
+      if (newMessage.senderId! == selectedUser._id) {
+        return;
+      }
+      set({ messages: [...get().messages, newMessage] });
+    });
+  },
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    socket.off("newMessage");
   },
 }));
