@@ -6,9 +6,15 @@ import axios from "axios";
 import type { UserLogin } from "../components/LoginPage";
 import type { UpdateProfile } from "../components/ProfilePage";
 import type { Users } from "./useChat";
-
+import { io, Socket } from "socket.io-client";
+export interface UserCurrent {
+  _id: string;
+  fullName: string;
+  email: string;
+  profilePic: string;
+}
 interface AuthState {
-  authUser: any;
+  authUser: UserCurrent | null;
   isCheckingAuth: boolean;
   isSigningUp: boolean;
   isLoggingIn: boolean;
@@ -19,9 +25,12 @@ interface AuthState {
   logout: () => void;
   updateProfile: (updateObject: UpdateProfile) => void;
   online: string[];
+  socket: Socket | null;
+  connectSocket: () => void;
+  disConnectSocket: () => void;
 }
 
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => ({
   authUser: null,
   isCheckingAuth: true,
   isSigningUp: false,
@@ -33,6 +42,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       const res = await clientApi.post("/auth/login", formData);
       set({ authUser: res.data });
       toast.success("Login successfully");
+      get().connectSocket(); // kết nối với socket luôn ngay sau khi vừa đăng nhập
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -48,6 +58,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     try {
       const res = await clientApi.get("/user/check");
       set({ authUser: res.data });
+      get().connectSocket(); // kết nối socket mỗi khi refresh lại trang
     } catch (error) {
       console.log(error);
       set({ authUser: null });
@@ -61,7 +72,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
     try {
       const res = await clientApi.post("/auth/signUp", formData);
       toast.success("Sign up successfully");
+
       set({ authUser: res.data });
+      get().connectSocket(); // kết nối với socket luôn sau khi truy cập
     } catch (error) {
       console.log(error);
       // kiểm tra lỗi bằng axios
@@ -80,6 +93,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ authUser: null });
       localStorage.removeItem("main-theme");
       toast.success("Logout successfully");
+      get().disConnectSocket(); // ngắt kết nối với socket khi đăng xuất
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data.message);
@@ -107,4 +121,29 @@ export const useAuthStore = create<AuthState>()((set) => ({
     }
   },
   online: [],
+  socket: null,
+  connectSocket: () => {
+    const { authUser } = get();
+    if (!authUser || get().socket?.connected) {
+      return;
+    }
+
+    const socket = io("http://localhost:5000", {
+      query: {
+        userId: authUser._id,
+      },
+    });
+    set({ socket });
+    if (socket) {
+      socket.connect();
+      socket.on("getAllOnline", (users: string[]) => {
+        set({ online: users });
+      });
+    }
+  },
+  disConnectSocket: () => {
+    if (get().socket?.connected) {
+      get().socket?.disconnect();
+    }
+  },
 }));

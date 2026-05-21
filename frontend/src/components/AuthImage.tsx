@@ -9,12 +9,10 @@ export default function AuthImage({ title, subtitle }: AuthImageProps) {
         <div className="grid grid-cols-3 gap-3 mb-8">
           {[...Array(9)].map((_, i) => {
             return (
-              <>
-                <div
-                  key={i}
-                  className={`aspect-square rounded-2xl bg-primary/10 ${i % 2 == 0 ? "animate-pulse" : ""}`}
-                ></div>
-              </>
+              <div
+                key={i}
+                className={`aspect-square rounded-2xl bg-primary/10 ${i % 2 == 0 ? "animate-pulse" : ""}`}
+              ></div>
             );
           })}
         </div>

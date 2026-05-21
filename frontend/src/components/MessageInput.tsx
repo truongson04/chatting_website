@@ -43,17 +43,19 @@ export default function MessageInput() {
       return;
     }
     try {
-      const newMessage: Message = {
-        senderId: authUser._id,
-        receiveId: selectedUser._id,
-        text: text.trim(),
-        image: imagePreview as string,
-      };
-      await sendMessage(newMessage);
-      setText("");
-      setImagePreview(undefined);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      if (authUser && selectedUser) {
+        const newMessage: Message = {
+          senderId: authUser._id,
+          receiveId: selectedUser._id,
+          text: text.trim(),
+          image: imagePreview as string,
+        };
+        await sendMessage(newMessage);
+        setText("");
+        setImagePreview(undefined);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -105,7 +107,7 @@ export default function MessageInput() {
 
           <button
             type="button"
-            className={`hidden sm:flex btn btn-circle
+            className={` sm:flex btn btn-circle
                      ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >

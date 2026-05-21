@@ -13,8 +13,9 @@ import { useThemeStore } from "./store/useTheme";
 
 export default function App() {
   // hàm để lưu thông tin người dùng vào store mỗi khi chuyển route
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, online } = useAuthStore();
   const { theme } = useThemeStore();
+  console.log(online);
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
